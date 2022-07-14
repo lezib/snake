@@ -1,0 +1,227 @@
+# Mau 05/07/2022 en python 3.10
+# Snake ! de base pour faire du deep learning mais tkt
+import random as rad
+import pygame as py 
+import sys
+import time
+
+class c: # renseignement de toutes les couleurs et mise à dispostion
+    fond = (38,38,38)
+    white = (208,208,208)
+    green = (112, 160, 20)
+    red = (232,57,49)
+
+class snake :
+    # class qui contient tout ce qui concerne le jeu 
+    def __init__(self) :
+        
+
+        # on cacul chaque coin en prenant en compte les bordures 
+        self.bordgh = (bordure-1,bordure-1)
+        self.bordgb = (bordure-1,cote-bordure)
+        self.borddh = (cote-bordure,bordure-1)
+        self.borddb = (cote-bordure,cote-bordure)
+        
+        
+        self.run = True
+        
+        self.main()
+
+    def grilledrawer(self) : # appartion du cadre bland en fonction de la taille des cases et de leur nombre
+        py.draw.line(win,c.white, self.bordgh,self.bordgb)
+        py.draw.line(win,c.white,self.borddh,self.borddb)
+        py.draw.line(win,c.white,self.bordgh,self.borddh)
+        py.draw.line(win,c.white,self.bordgb,self.borddb)
+
+    def grillemaker(self): # découpage de la grille afin d'avoir uune grille exploitable
+        self.case = {}
+        self.train = 3   # longeur de la trainé derrière la tête
+        self.view = 3 # peut etre 1,2,3 ou 4 soit nord,est,sud,ouest
+        self.history = []
+        self.casevide = []
+        for ligne in range(1,nbrcase+1) :
+            self.case[ligne] = {}
+            for column in range(1,nbrcase+1) :
+
+                self.case[ligne][column] = {} 
+                #pour chaque case on renseigne les coordonné du coin supérieur gauche
+                self.case[ligne][column]["coord"] = ((bordure+(column-1)*(caselenght)),(bordure+(ligne-1)*(caselenght)))
+
+                # et pour chaque case on renseigne l'état de la case
+                # pour celle du milieu on le met directement en snake pour le spawn
+                if column == (nbrcase-1)/2+1  and (ligne == (nbrcase-1)/2+1 or ligne == (nbrcase-1)/2 or ligne == (nbrcase-1)/2-1) : 
+                    self.case[ligne][column]["state"] = 1
+                    self.history.append((ligne,column))
+                else : 
+                    self.case[ligne][column]["state"] = 0
+
+                if self.case[ligne][column]["state"] == 0 :
+                    self.casevide.append((ligne,column))
+
+    def colormaker(self) : # mis à jour de toutes les couleurs de chaque cases en fonction de leur état
+
+        for case in self.history :
+            ligne,column = case
+            x,y = self.case[ligne][column]["coord"]
+            win.fill(c.green,rect=(x,y,caselenght,caselenght))
+
+        for case in self.casevide :
+            ligne,column = case
+            x,y = self.case[ligne][column]["coord"]
+            win.fill(c.fond,rect=(x,y,caselenght,caselenght))
+
+        ax1,ay1 = self.apple 
+        ax2,ay2 = self.case[ax1][ay1]["coord"]
+        win.fill(c.red,rect=(ax2,ay2,caselenght,caselenght))
+
+        """
+        for ligne in self.case.keys() :# on parcours toutes les cases une a une pour voir si il y en a qui sont dans un autre état que 0
+            for column in self.case[ligne].keys() :
+                if self.case[ligne][column]["state"] == 1 : # si etat 1 = vert
+                    if (ligne,column) in self.history : 
+                        a1,b1 = self.case[ligne][column]["coord"]
+                        py.draw.rect(win, c.green,(a1,b1,caselenght,caselenght))
+
+                elif self.case[ligne][column]["state"] == 2 :# si etat 2 = rouge
+                    a1,b1 = self.case[ligne][column]["coord"]
+                    py.draw.rect(win, c.red,(a1,b1,caselenght,caselenght))
+                
+                elif self.case[ligne][column]["state"] == 0 :# si etat 0 = gris
+                    a1,b1 = self.case[ligne][column]["coord"]
+                    py.draw.rect(win, c.fond,(a1,b1,caselenght,caselenght))
+        """
+
+    def applemaker(self) :
+        for ligne in self.case.keys() : # verification qu'il n'y ai pas déjà une pomme
+            for column in self.case[ligne].keys() :
+                if self.case[ligne][column]["state"] == 2 :
+                    return None
+        ligne,column =  rad.randint(1,nbrcase),rad.randint(1,nbrcase) # selection random d'une case et on ressaie si déjà occupé
+        while self.case[ligne][column]["state"] != 0 :
+            ligne,column =  rad.randint(1,nbrcase),rad.randint(1,nbrcase)
+        self.case[ligne][column]["state"] = 2
+        self.apple = (ligne,column)
+        self.casevide.remove(self.apple)
+
+    def eventvital(self) :
+        for event in py.event.get() : #event de croix rouge
+            if event.type == py.QUIT:
+                sys.exit('Vous avez quitté le jeu')
+        
+            elif event.type == py.MOUSEBUTTONDOWN : # fait apparaitre un carré blanc sur la case qu'on clique
+                x,y = py.mouse.get_pos()
+                #print(x,y)
+                for ligne in self.case.keys() :
+                    for column in self.case[ligne].keys() :
+                        a1,b1 = self.case[ligne][column]["coord"]
+                        a2,b2 = a1+caselenght, b1+caselenght
+                        
+                        if x in range(a1,a2) and y in range(b1,b2) : 
+                            print (f"({ligne},{column})")
+                            py.draw.rect(win, c.white,(a1,b1,caselenght,caselenght))
+            
+            elif event.type == py.MOUSEBUTTONUP : #efface le carré blanc qui vient d'être cliqué
+                win.fill(c.fond)
+                self.colormaker()
+                self.grilledrawer()
+
+            elif event.type == py.KEYUP : # changement d'un etat sur commande
+                if event.key == py.K_SPACE:
+                    ligne = int(input("quelle colone ? ->"))
+                    column = int(input("quelle ligne ? ->"))
+                    state = int(input("quelle état ? \n0 : vide \n1 : serpent \n2 : pomme \n->"))
+                    self.case[ligne][column]["state"] = state
+
+                if event.key == py.K_a : 
+                    self.applemaker()
+                    print((1,2)+(1,1))
+
+                if event.key == py.K_z : # efface tout les pommes en parcourant toute les cases et remplacant si besoin
+                    for ligne in self.case.keys() :
+                        for column in self.case[ligne].keys() :
+                            if self.case[ligne][column]["state"] == 2 :
+                                self.case[ligne][column]["state"] = 0
+                                win.fill(c.fond)
+                                self.colormaker()
+                                self.grilledrawer()
+
+            elif event.type == py.KEYDOWN : # changement dde point de vue
+                if event.key == py.K_UP and self.movepass == True and (self.view != 1 and self.view != 3) : 
+                    self.view = 1
+                    self.movepass = False
+                elif event.key == py.K_RIGHT and self.movepass == True and (self.view != 2 and self.view != 4): 
+                    self.view = 2
+                    self.movepass = False
+                elif event.key == py.K_DOWN and self.movepass == True and (self.view != 3 and self.view != 1): 
+                    self.view = 3
+                    self.movepass = False
+                elif event.key == py.K_LEFT and self.movepass == True and (self.view != 4 and self.view != 2): 
+                    self.view = 4
+                    self.movepass = False
+
+    def goto(self): # déplacement du serpent
+        if self.view == 1 : 
+            nextcolone = 0
+            nextline   = -1
+        elif self.view == 2 : 
+            nextcolone = 1
+            nextline   = 0
+        elif self.view == 3 : 
+            nextcolone = 0
+            nextline   = 1
+        elif self.view == 4 : 
+            nextcolone = -1
+            nextline   = 0
+        xy  = self.history[-1]
+        x,y = xy
+        x  +=  nextline
+        y  +=  nextcolone
+        try : 
+            self.history.append((x,y))
+            if self.case[x][y]["state"] == 1 : # si on tombe sur une partie du 
+                self.run = False
+            elif self.case[x][y]["state"] == 0 :
+                self.casevide.remove((x,y))
+            if len(self.history) > self.train :
+                ligne,column = self.history[0]
+                self.case[ligne][column]["state"] = 0
+                self.casevide.append(self.history[0])
+                del self.history[0]
+            if self.apple in self.history :
+                ligne,column = self.apple 
+                self.case[ligne][column]["state"] = 0
+                self.apple = None
+                self.applemaker()
+                self.train += 1 
+            for items in range(0,len(self.history)) :
+                ligne,column = self.history[items]
+                self.case[ligne][column]["state"] = 1
+            self.movepass = True
+            print(self.history)
+        except :
+            print("tu viens de mourir !")
+            self.run = False
+
+    def main(self) :
+        win.fill(c.fond)
+        self.grillemaker()
+        self.grilledrawer()
+        self.applemaker()
+
+        while self.run :
+            self.goto()
+            self.colormaker()  
+            self.grilledrawer()
+            self.eventvital()
+            py.display.update()
+            time.sleep(0.075)
+        print(self.run)
+
+py.init()
+nbrcase = 51
+caselenght = 15
+bordure = 10
+cote = nbrcase*caselenght + bordure*2
+win = py.display.set_mode((cote,cote))
+py.display.set_caption("The snake")
+snake()

@@ -1,0 +1,390 @@
+# 13/07/2022
+import pygame as py 
+import random as rad
+import time
+import sys
+
+
+class c: # renseignement de toutes les couleurs et mise à dispostion
+    white  = ( 180 , 180 , 180 )
+    green  = ( 112 , 160 , 20  )
+    red    = ( 232 , 57  , 49  )
+    blue   = ( 42  , 134 , 210 )
+    violet = ( 145 , 70  , 255 )
+    orange = ( 209 , 113 , 37  )
+    black  = ( 0   , 0   , 0   )
+    yellow = ( 250 , 169 , 26  )
+
+    fond   = ( 38  , 38  , 38  )
+    snake  = ( 112 , 160 , 20  )
+    apple  = ( 232 , 57  , 49  )
+
+class label() :
+    def __init__(self, text, x, y, colortext=c.fond, taille=30, colorfond=c.white, fond=True):
+        self.x = x
+        self.y = y
+        self.font = py.font.SysFont("comicsansms", taille)
+        self.set(text,colortext,colorfond,fond)
+
+    def set(self, text,colortext=c.fond,colorfond=c.white,fond=True):
+        self.text = self.font.render(text, 1, colortext)
+        w, h = self.text.get_size()
+        if fond :
+            self.rect = py.draw.rect(win,colorfond,(self.x-((w+40)/2), self.y-(h/2)+4, w+40, h+4),0,4)
+        win.blit(self.text, (self.x-(w/2), self.y-(h/2)))
+
+class menu() :
+    def __init__(self) :
+        self.run = True
+        win = py.display.set_mode((menusize))
+        self.main()
+
+    def envent(self) :
+        coord = py.mouse.get_pos()
+        mx,my = coord
+
+        for event in py.event.get():
+            
+            if event.type == py.QUIT:
+                self.run = False
+                py.quit()
+                sys.exit()
+
+            if event.type == py.MOUSEBUTTONDOWN:
+                #print(coord)
+                if self.lab1.rect.collidepoint(mx, my):
+                    time.sleep(0.7)
+                    self.run = False
+                    snake()
+
+                elif self.lab2.rect.collidepoint(mx, my):
+                    self.run = False
+                    settings()
+                    
+                elif self.lab3.rect.collidepoint(mx, my):
+                    self.run = False
+                    py.quit()
+                    sys.exit()
+                    
+            elif event.type == py.KEYDOWN : # changement dde point de vue
+                if event.key == py.K_SPACE :
+                    self.run = False
+                    snake()
+
+        if self.lab1.rect.collidepoint(mx, my):
+            self.lab1.set("Play",c.green,c.white)
+        if self.lab2.rect.collidepoint(mx, my):
+            self.lab2.set("Settings",c.green,c.white)
+        if self.lab3.rect.collidepoint(mx, my):
+            self.lab3.set("Quit",c.green,c.white)
+
+    def bouton(self) :
+        #py.draw.line(win,c.white,(400,0),(400,600))
+        self.lab1 = label("Play", 400, 200, c.fond, 50)
+        self.lab2 = label("Settings", 400, 300, c.fond, 50)
+        self.lab3 = label("Quit", 400, 400, c.fond, 50)
+        lab4 = label("The_Snake.py", 400, 100, c.white, 60, c.green)
+        lab5 = label("By mau", 25, 590, c.white, 15, c.fond)
+
+    def main(self) :
+        win.fill(c.fond)
+        while self.run:
+            self.bouton()
+            self.envent()
+            py.display.update()
+
+class settings() :
+    def __init__(self) :
+        self.run = True
+        win = py.display.set_mode((menusize))
+        self.main()
+
+    def envent(self) :
+        global colorchoice_snake, colorchoice_apple
+        coord = py.mouse.get_pos()
+        mx,my = coord
+
+        for event in py.event.get():
+            
+            if event.type == py.QUIT:
+                self.run = False
+                py.quit()
+                sys.exit()
+
+            elif event.type == py.MOUSEBUTTONDOWN:
+                print(coord)
+                if self.lab1.rect.collidepoint(mx, my):
+                    self.run = False
+                    menu()
+                elif self.lab411.rect.collidepoint(mx, my) :
+                    colorchoice_snake = colorchoice_snake + 1
+                    if colorchoice_snake > 7 :
+                        colorchoice_snake = 1
+                elif self.lab421.rect.collidepoint(mx, my) :
+                    colorchoice_apple = colorchoice_apple + 1
+                    if colorchoice_apple > 7 :
+                        colorchoice_apple = 1
+            
+            elif event.type == py.KEYDOWN : # changement dde point de vue
+                if event.key == py.K_SPACE :
+                    self.run = False
+
+        if self.lab1.rect.collidepoint(mx, my):
+            self.lab1.set("< Menu",c.green,c.white)
+
+    def bouton(self) :
+        self.lab1 = label("< Menu", 97, 28, c.fond, 50)
+        self.lab2 = label("Settings", 400 , 25, c.green, 50, fond=False )
+
+        self.lab3 = label("Screen", 130, 95, c.white, 35, fond=False)
+        self.lab311 = label("Nombre de cases", 90, 145, c.white, 20, fond=False)
+        self.lab312 = label("par coté :", 55, 170, c.white, 20, fond=False)
+        self.lab32 = label("taille des cases :", 85, 230, c.white, 20, fond=False)
+        py.draw.rect(win,c.green,(55-(caselenght/2),290-(caselenght/2),caselenght,caselenght),0,4)
+
+        self.lab4 = label("Skin", 400, 95, c.white, 35, fond=False)
+        self.lab41 = label("Serpent :", 320, 145, c.white, 20, fond=False)
+        if colorchoice_snake == 1 :
+            self.lab411 = label("Vert", 420, 145, c.green, 20,colorfond=c.fond)
+            c.snake = c.green
+        elif colorchoice_snake == 2 :
+            self.lab411 = label("Bleu", 420, 145, c.blue, 20,colorfond=c.fond)
+            c.snake = c.blue
+        elif colorchoice_snake == 3 :
+            self.lab411 = label("Violet", 420, 145, c.violet, 20,colorfond=c.fond)
+            c.snake = c.violet
+        elif colorchoice_snake == 4 :
+            self.lab411 = label("Orange", 420, 145, c.orange, 20,colorfond=c.fond)
+            c.snake = c.orange
+        elif colorchoice_snake == 5 :
+            self.lab411 = label("Noir", 420, 145, c.black, 20,colorfond=c.fond)
+            c.snake = c.black
+        elif colorchoice_snake == 6 :
+            self.lab411 = label("Jaune", 420, 145, c.yellow, 20,colorfond=c.fond)
+            c.snake = c.yellow
+        elif colorchoice_snake == 7 :
+            self.lab411 = label("rouge", 420, 145, c.red, 20,colorfond=c.fond)
+            c.snake = c.red
+
+        self.lab42 = label("Pomme :", 320, 170, c.white, 20, fond=False)
+        if colorchoice_apple == 1 :
+            self.lab421 = label("Vert", 420, 170, c.green, 20,colorfond=c.fond)
+            c.apple = c.green
+        elif colorchoice_apple == 2 :
+            self.lab421 = label("Bleu", 420, 170, c.blue, 20,colorfond=c.fond)
+            c.apple = c.blue
+        elif colorchoice_apple == 3 :
+            self.lab421 = label("Violet", 420, 170, c.violet, 20,colorfond=c.fond)
+            c.apple = c.violet
+        elif colorchoice_apple == 4 :
+            self.lab421 = label("Orange", 420, 170, c.orange, 20,colorfond=c.fond)
+            c.apple = c.orange
+        elif colorchoice_apple == 5 :
+            self.lab421 = label("Noir", 420, 170, c.black, 20,colorfond=c.fond)
+            c.apple = c.black
+        elif colorchoice_apple == 6 :
+            self.lab421 = label("Jaune", 420, 170, c.yellow, 20,colorfond=c.fond)
+            c.apple = c.yellow
+        elif colorchoice_apple == 7 :
+            self.lab421 = label("rouge", 420, 170, c.red, 20,colorfond=c.fond)
+            c.apple = c.red
+
+        self.lab5 = label("Gameplay", 670, 95, c.white, 35, fond=False)
+
+        py.draw.line(win,c.white, (0,68), (800,68), 5) # ligne horizontale 1 (en partant du haut)
+        py.draw.line(win,c.white, (0,125), (800,125), 3) # ligne horizontale 2 
+        py.draw.line(win,c.white, (266,68), (266,600), 3) # ligne verticale gauche
+        py.draw.line(win,c.white, (533,68), (533,600), 3) # ligne verticale droite
+
+    def main(self) :
+        win.fill(c.fond)
+        while self.run:
+            self.bouton()
+            self.envent()
+            py.display.update()
+
+class snake :
+    # class qui contient tout ce qui concerne le jeu 
+    def __init__(self) :
+        cote = nbrcase*caselenght + bordure*2
+        win = py.display.set_mode((cote,cote))
+        # on cacul chaque coin en prenant en compte les bordures 
+        self.bordgh = (bordure-1,bordure-1)
+        self.bordgb = (bordure-1,cote-bordure)
+        self.borddh = (cote-bordure,bordure-1)
+        self.borddb = (cote-bordure,cote-bordure)
+        
+        self.run = True
+        self.main()
+
+    def grilledrawer(self) : # appartion du cadre bland en fonction de la taille des cases et de leur nombre
+        py.draw.line(win,c.white, self.bordgh,self.bordgb)
+        py.draw.line(win,c.white,self.borddh,self.borddb)
+        py.draw.line(win,c.white,self.bordgh,self.borddh)
+        py.draw.line(win,c.white,self.bordgb,self.borddb)
+
+    def grillemaker(self): # découpage de la grille afin d'avoir uune grille exploitable
+        self.case = {}
+        self.train = 3   # longeur de la trainé derrière la tête
+        self.view = 3 # peut etre 1,2,3 ou 4 soit nord,est,sud,ouest
+        self.history = []
+        self.casevide = []
+        for ligne in range(1,nbrcase+1) :
+            self.case[ligne] = {}
+            for column in range(1,nbrcase+1) :
+
+                self.case[ligne][column] = {} 
+                #pour chaque case on renseigne les coordonné du coin supérieur gauche
+                self.case[ligne][column]["coord"] = ((bordure+(column-1)*(caselenght)),(bordure+(ligne-1)*(caselenght)))
+
+                # et pour chaque case on renseigne l'état de la case
+                # pour celle du milieu on le met directement en snake pour le spawn
+                if column == (nbrcase-1)/2+1  and (ligne == (nbrcase-1)/2+1 or ligne == (nbrcase-1)/2 or ligne == (nbrcase-1)/2-1) : 
+                    self.case[ligne][column]["state"] = 1
+                    self.history.append((ligne,column))
+                else : 
+                    self.case[ligne][column]["state"] = 0
+
+                if self.case[ligne][column]["state"] == 0 :
+                    self.casevide.append((ligne,column))
+
+    def colormaker(self) : # mis à jour de toutes les couleurs de chaque cases en fonction de leur état
+
+        for case in self.history :
+            ligne,column = case
+            x,y = self.case[ligne][column]["coord"]
+            py.draw.rect(win,c.snake,(x,y,caselenght,caselenght),0,2)
+
+        for case in self.casevide :
+            ligne,column = case
+            x,y = self.case[ligne][column]["coord"]
+            win.fill(c.fond,rect=(x,y,caselenght,caselenght))
+
+        ax,ay = self.case[self.apple[0]][self.apple[1]]["coord"]
+        py.draw.rect(win,c.apple,(ax,ay,caselenght,caselenght),0,2)
+
+    def applemaker(self) :
+        for ligne in self.case.keys() : # verification qu'il n'y ai pas déjà une pomme
+            for column in self.case[ligne].keys() :
+                if self.case[ligne][column]["state"] == 2 :
+                    return None
+        
+        ligne,column =  rad.randint(1,nbrcase),rad.randint(1,nbrcase) # selection random d'une case et on ressaie si déjà occupé
+        while self.case[ligne][column]["state"] != 0 :
+            ligne,column =  rad.randint(1,nbrcase),rad.randint(1,nbrcase)
+
+        self.case[ligne][column]["state"] = 2
+        self.apple = (ligne,column)
+        self.casevide.remove(self.apple)
+
+    def eventvital(self) :
+        for event in py.event.get() : #event de croix rouge
+            if event.type == py.QUIT:
+                sys.exit('Vous avez quitté le jeu')
+        
+            elif event.type == py.MOUSEBUTTONDOWN : # fait apparaitre un carré blanc sur la case qu'on clique
+                x,y = py.mouse.get_pos()
+                for ligne in self.case.keys() :
+                    for column in self.case[ligne].keys() :
+                        a1,b1 = self.case[ligne][column]["coord"]
+                        a2,b2 = a1+caselenght, b1+caselenght
+                        
+                        if x in range(a1,a2) and y in range(b1,b2) : 
+                            py.draw.rect(win, c.white,(a1,b1,caselenght,caselenght))
+            
+            elif event.type == py.MOUSEBUTTONUP : #efface le carré blanc qui vient d'être cliqué
+                win.fill(c.fond)
+                self.colormaker()
+                self.grilledrawer()
+
+            elif event.type == py.KEYUP : # changement d'un etat sur commande
+                pass
+            elif event.type == py.KEYDOWN : # changement dde point de vue
+                if event.key == py.K_UP and self.movepass == True and (self.view != 1 and self.view != 3) : 
+                    self.view = 1
+                    self.movepass = False
+                elif event.key == py.K_RIGHT and self.movepass == True and (self.view != 2 and self.view != 4): 
+                    self.view = 2
+                    self.movepass = False
+                elif event.key == py.K_DOWN and self.movepass == True and (self.view != 3 and self.view != 1): 
+                    self.view = 3
+                    self.movepass = False
+                elif event.key == py.K_LEFT and self.movepass == True and (self.view != 4 and self.view != 2): 
+                    self.view = 4
+                    self.movepass = False
+
+    def goto(self): # déplacement du serpent
+        if self.view == 1 : 
+            nextcolone = 0
+            nextline   = -1
+        elif self.view == 2 : 
+            nextcolone = 1
+            nextline   = 0
+        elif self.view == 3 : 
+            nextcolone = 0
+            nextline   = 1
+        elif self.view == 4 : 
+            nextcolone = -1
+            nextline   = 0
+            
+        xy  = self.history[-1]
+        x,y = xy
+        x  +=  nextline
+        y  +=  nextcolone
+        
+        try : 
+            self.history.append((x,y))
+            
+            if self.case[x][y]["state"] == 1 : # si on tombe sur une partie du 
+                self.run = False
+                menu()
+
+            elif self.case[x][y]["state"] == 0 :
+                self.casevide.remove((x,y))
+
+            if len(self.history) > self.train :
+                ligne,column = self.history[0]
+                self.case[ligne][column]["state"] = 0
+                self.casevide.append(self.history[0])
+                del self.history[0]
+
+            if self.apple in self.history :
+                ligne,column = self.apple 
+                self.case[ligne][column]["state"] = 0
+                self.apple = None
+                self.applemaker()
+                self.train += 1 
+                
+            for items in range(0,len(self.history)) :
+                ligne,column = self.history[items]
+                self.case[ligne][column]["state"] = 1
+            self.movepass = True
+
+        except :
+            self.run = False
+            menu()
+
+    def main(self) :
+        win.fill(c.fond)
+        self.grillemaker()
+        self.grilledrawer()
+        self.applemaker()
+
+        while self.run :
+            self.goto()
+            self.colormaker()  
+            self.grilledrawer()
+            self.eventvital()
+            py.display.update()
+            time.sleep(0.07)
+
+nbrcase = 51
+caselenght = 15
+bordure = 10
+colorchoice_snake = 1
+colorchoice_apple = 7
+py.init()
+menusize = (800,600)
+win = py.display.set_mode((menusize))
+py.display.set_caption("The snake")
+menu()
